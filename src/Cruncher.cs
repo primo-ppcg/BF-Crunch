@@ -72,7 +72,7 @@ namespace ppcg {
                                 byte[] tape;
                                 int pntr = FillTape(s, c, k[0], k[1], j[0], j[1], h, out tape);
                                 int max_pntr = pntr + c.Count + 1;
-                                if(max_pntr >= min_tape && max_pntr <= max_tape) {
+                                if(pntr > 0 && max_pntr >= min_tape && max_pntr <= max_tape) {
                                     Solver solver1 = new Solver(goal, tape, pntr, max_pntr);
                                     Path solution1 = solver1.Solve(this.limit - len);
                                     if(solution1 is Path) {
