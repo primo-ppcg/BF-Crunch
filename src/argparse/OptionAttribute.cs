@@ -48,7 +48,7 @@ namespace ppcg.argparse {
                 helptext = string.Format("{0} Default = {1}", helptext, dvattr.Value);
             }
 
-            sb.Append(string.Join(Environment.NewLine + new string(' ', 20), helptext.WordWrap(Console.WindowWidth - 24)));
+            sb.Append(string.Join(Environment.NewLine + new string(' ', 20), helptext.WordWrap(Console.WindowWidth - 20)));
             return sb.ToString();
         }
 
