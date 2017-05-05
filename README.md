@@ -41,7 +41,7 @@ Options
 
 Output is given in three lines:
  1. Total length of the program found, and the initialization segment.
- 2. Path taken, starting with the current tape pointer.
+ 2. Path taken, starting with the current tape pointer. Each node corresponds to one character of output, represented as (pointer, cost).
  3. Utilized tape segment.
  
 For example, the final result for `bfcrunch "hello world" 70 -r -i23` is:
