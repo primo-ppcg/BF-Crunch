@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -14,6 +14,8 @@ namespace ppcg {
         }
 
         public Path() { }
+
+        public Path(IEnumerable<Node> nodes) : base(nodes) { }
 
         protected Path(SerializationInfo info, StreamingContext context) : base(info, context) { }
 

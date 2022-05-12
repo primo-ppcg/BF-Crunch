@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -45,7 +45,7 @@ namespace ppcg.argparse {
             string helptext = HelpText;
             DefaultValueAttribute dvattr = (DefaultValueAttribute)prop.GetCustomAttributes(typeof(DefaultValueAttribute), true).FirstOrDefault();
             if(dvattr is DefaultValueAttribute) {
-                helptext = string.Format("{0} Default = {1}", helptext, dvattr.Value);
+                helptext = string.Format("{0} Default = {1}", helptext, dvattr.Value ?? "(empty)");
             }
 
             sb.Append(string.Join(Environment.NewLine + new string(' ', 20), helptext.WordWrap(Console.WindowWidth - 20)));

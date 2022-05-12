@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 using ppcg.math;
 
@@ -10,10 +11,18 @@ namespace ppcg {
 
         private int min_tape;
         private int max_tape;
+        private int max_node_cost;
+        private int max_loops;
+
+        private int min_slen;
+        private int max_slen;
+        private int min_clen;
+        private int max_clen;
 
         private byte[] goal;
         private int limit;
         private bool rolling_limit;
+        private bool unique_cells;
 
         private static int[] modinv256 = new int[] {
             //  1       3       5       7      9      11      13      15      17      19
@@ -25,10 +34,20 @@ namespace ppcg {
         public Cruncher(MyOptions options) {
             this.min_tape = options.MinTape;
             this.max_tape = options.MaxTape;
+            this.max_node_cost = options.MaxNodeCost;
+            this.max_loops = options.MaxLoops;
 
-            this.goal = Encoding.GetEncoding("ISO-8859-1").GetBytes(options.Text);
+            this.min_slen = options.MinSLen;
+            this.max_slen = options.MaxSLen ?? int.MaxValue;
+            this.min_clen = options.MinCLen;
+            this.max_clen = options.MaxCLen ?? int.MaxValue;
 
-            if(options.Limit == 0) {
+            this.goal = Encoding.GetEncoding("ISO-8859-1").GetBytes(Regex.Unescape(options.Text));
+
+            if(options.Limit.HasValue) {
+                this.limit = options.Limit.Value;
+                this.rolling_limit = options.RollingLimit;
+            } else {
                 int diff = 0;
                 byte last = 0;
                 foreach(byte b in goal) {
@@ -37,10 +56,9 @@ namespace ppcg {
                 }
                 this.limit = (diff / 3) + goal.Length + 20;
                 this.rolling_limit = true;
-            } else {
-                this.limit = options.Limit;
-                this.rolling_limit = options.RollingLimit;
             }
+
+            this.unique_cells = options.UniqueCells;
         }
 
         /**
@@ -54,10 +72,10 @@ namespace ppcg {
          */
         public void Crunch(int len) {
             Console.WriteLine(string.Format("init-len: {0}; limit: {1}", len, limit));
-            for(int slen = 1; slen <= len - 12; slen++)
+            for(int slen = Math.Max(this.min_slen, 1); slen <= Math.Min(this.max_slen, len - 12); slen++)
             foreach(List<int> s in SListGen(slen)) {
 
-                for(int clen = 3; clen <= len - slen - 9; clen++)
+                for(int clen = Math.Max(this.min_clen, 3); clen <= Math.Min(this.max_clen, len - slen - 9); clen++)
                 foreach(List<int> c in CListGen(clen)) {
 
                     for(int klen = 0; klen <= len - slen - clen - 9; klen++)
@@ -73,7 +91,7 @@ namespace ppcg {
                                 int pntr = FillTape(s, c, k[0], k[1], j[0], j[1], h, out tape);
                                 int max_pntr = pntr + c.Count + 1;
                                 if(pntr > 0 && max_pntr >= min_tape && max_pntr <= max_tape) {
-                                    Solver solver1 = new Solver(goal, tape, pntr, max_pntr);
+                                    Solver solver1 = new Solver(goal, tape, pntr, max_pntr, max_node_cost, unique_cells);
                                     Path solution1 = solver1.Solve(this.limit - len);
                                     if(solution1 is Path) {
                                         int min_pntr = solution1.Min(node => node.Pointer);
@@ -90,7 +108,7 @@ namespace ppcg {
                                         for(int i = 1; i <= c.Count; i++) {
                                             tape[pntr + i] = (byte)(-tape[pntr + i]);
                                         }
-                                        Solver solver2 = new Solver(goal, tape, pntr, max_pntr);
+                                        Solver solver2 = new Solver(goal, tape, pntr, max_pntr, max_node_cost, unique_cells);
                                         Path solution2 = solver2.Solve(this.limit - len);
                                         if(solution2 is Path && (solution1 == null || solution2.Cost < solution1.Cost)) {
                                             int min_pntr = solution2.Min(node => node.Pointer);
@@ -116,7 +134,7 @@ namespace ppcg {
         }
 
         private int FillTape(List<int> s, List<int> c, int k0, int k1, int j0, int j1, int h, out byte[] tape) {
-            tape = new byte[max_tape + 1];
+            tape = new byte[max_tape + s.Count];
             for(int i = 0; i < s.Count; i++) {
                 tape[i + 2] = (byte)s[i];
             }

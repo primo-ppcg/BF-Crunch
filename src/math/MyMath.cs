@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace ppcg.math {
@@ -23,7 +23,7 @@ namespace ppcg.math {
         }
 
         public static bool IsNumeric(this Type type) {
-            return NumericTypes.Contains(type);
+            return NumericTypes.Contains(type) || NumericTypes.Contains(Nullable.GetUnderlyingType(type));
         }
 
         public static int BinarySearch(this int[] source, int value) {
